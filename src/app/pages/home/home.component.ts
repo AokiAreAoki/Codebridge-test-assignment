@@ -39,7 +39,27 @@ export class HomePage {
     return this.api
       .getArticles({ queryKeywords })
       .subscribe(articles => {
-        this.articles = articles;
+        if (!queryKeywords) {
+          this.articles = articles
+          return
+        }
+
+        const regexp = new RegExp(queryKeywords.join('|'), 'gi')
+
+        this.articles = articles
+          .map(article => ({
+            article,
+            titleMatches: (article.title.match(regexp) || []).length,
+            summaryMatches: (article.summary.match(regexp) || []).length,
+          }))
+          .sort((a, b) => {
+            if (a.titleMatches !== b.titleMatches) {
+              return b.titleMatches - a.titleMatches
+            }
+
+            return b.summaryMatches - a.summaryMatches
+          })
+          .map(({ article }) => article)
       })
   }
 
