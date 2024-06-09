@@ -38,7 +38,7 @@ export class ArticlePage {
 
   fetchData(id: string) {
     this.api
-      .getArticle(id)
+      .getArticle({ id })
       .subscribe(article => {
         this.article = article;
       })

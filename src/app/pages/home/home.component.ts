@@ -1,7 +1,7 @@
 import { Component, OnInit, computed, effect, signal } from '@angular/core';
 import { ApiService } from '../../services/api/api.service';
 import Article from '../../types/Article';
-import { BehaviorSubject, Observable, debounceTime, switchMap } from 'rxjs';
+import { BehaviorSubject, Observable, debounceTime, map, switchMap } from 'rxjs';
 import { SearchBarComponent } from "../../components/search-bar/search-bar.component";
 import { NgFor } from '@angular/common';
 import { MatCardContent } from '@angular/material/card';
@@ -19,17 +19,25 @@ import { Router } from '@angular/router';
 })
 export class HomePage {
   query = new BehaviorSubject<string>('');
+  queryKeywords: string[] = []
   articles: Article[] = []
 
   constructor(private api: ApiService, private router: Router) {
     this.query
-      .pipe(debounceTime(250))
-      .subscribe(query => this.fetchData(query))
+      .pipe(
+        debounceTime(250),
+        map(query => query.trim()),
+        map(query => query.split(/\s+/)),
+      )
+      .subscribe(queryKeywords => {
+        this.queryKeywords = queryKeywords
+        this.fetchData(queryKeywords)
+      })
   }
 
-  fetchData(query?: string) {
+  fetchData(queryKeywords?: string[]) {
     return this.api
-      .getArticles(query)
+      .getArticles({ queryKeywords })
       .subscribe(articles => {
         this.articles = articles;
       })

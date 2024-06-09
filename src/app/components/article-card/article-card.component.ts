@@ -3,11 +3,14 @@ import { CardComponent } from '../card/card.component';
 import Article from '../../types/Article';
 import { DirectionalButtonComponent } from '../directional-button/directional-button.component';
 import { MatIconModule } from '@angular/material/icon';
+import splitByKeywords, { HighlightChunk } from '../../utils/splitByKeywords';
+import { NgFor, NgIf } from '@angular/common';
+import { HighlightComponent } from '../highlight/highlight.component';
 
 @Component({
   selector: 'article-card',
   standalone: true,
-  imports: [CardComponent, MatIconModule, DirectionalButtonComponent],
+  imports: [NgIf, NgFor, CardComponent, MatIconModule, DirectionalButtonComponent, HighlightComponent],
   template: `
     <card [imageURL]="value.image_url">
       <div class="content grow">
@@ -16,8 +19,13 @@ import { MatIconModule } from '@angular/material/icon';
           <div>{{ value.published_at.toLocaleDateString() }}</div>
         </div>
 
-        <div class="title primary-color">{{ value.title }}</div>
-        <div class="grow primary-color">{{ summary() }}</div>
+        <div class="title primary-color">
+          <highlight [value]="highlightedTitle()" />
+        </div>
+
+        <div class="grow primary-color">
+          <highlight [value]="highlightedSummary()" />
+        </div>
 
         <directional-button (click)="onClick.emit()">
           <b>Read more</b>
@@ -25,53 +33,53 @@ import { MatIconModule } from '@angular/material/icon';
       </div>
     </card>
   `,
-  styles: `
-    .grow {
-      flex: 1 0 0%;
-    }
-
-    .flex {
-      display: flex;
-      gap: 0.5rem;
-    }
-
-    .title {
-      font-size: 1.2rem;
-    }
-
-    .content {
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-      padding: 1rem;
-
-      display: grid;
-      grid-template-columns: 1fr;
-      grid-template-rows: auto auto 1fr auto;
-
-      button {
-        border: none;
-        background: none;
-        cursor: pointer;
-        padding: 0;
-      }
-    }
-  `
+  styleUrl: './article-card.component.less',
 })
 export class ArticleCardComponent {
   @Input() value: Article = {} as Article
+  @Input() highlightKeywords: string[] = []
   onClick = output<void>()
 
-  summary = computed(() => {
+  highlightedTitle = computed(() => {
+    const chunks = splitByKeywords(this.value.title, this.highlightKeywords)
+    return chunks
+  })
+
+  highlightedSummary = computed(() => {
+    const chunks = splitByKeywords(this.value.summary, this.highlightKeywords)
     const summary = this.value.summary
 
     if (summary.length < 100) {
-      return summary
+      return chunks
     }
 
-    const lastSpace = summary.lastIndexOf(' ', 100)
-    return summary.slice(0, lastSpace).trimEnd() + '...'
+    const maxTextNodeSize = chunks.reduce((acc, chunk) => acc + chunk.prevText.length - 3, 0) / chunks.length
+    cropChunks(chunks, maxTextNodeSize)
+
+    return chunks
   })
 
   constructor() { }
+}
+
+function cropChunks(chunks: HighlightChunk[], maxTextNodeSize: number) {
+  chunks.forEach(chunk => {
+    if (chunk.prevText.length > maxTextNodeSize) {
+      if (chunk.keyword) {
+        let start = chunk.prevText.slice(0, maxTextNodeSize / 2)
+        let end = chunk.prevText.slice(-maxTextNodeSize / 2)
+
+        start = start.slice(0, start.lastIndexOf(' '))
+        end = end.slice(end.indexOf(' ') + 1)
+
+        chunk.prevText = `${start}...${end}`
+      } else {
+        let start = chunk.prevText.slice(0, maxTextNodeSize)
+        start = start.slice(0, start.lastIndexOf(' '))
+
+        chunk.prevText = `${start}...`
+      }
+
+    }
+  })
 }

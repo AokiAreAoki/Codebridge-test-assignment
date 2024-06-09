@@ -1,5 +1,8 @@
 <main>
-	<div *ngIf="article" class="back-image"></div>
+	<div class="back-image-container">
+		<loading *ngIf="!article" />
+		<div *ngIf="article" class="back-image"></div>
+	</div>
 
 	<div class="body">
 		<card>
