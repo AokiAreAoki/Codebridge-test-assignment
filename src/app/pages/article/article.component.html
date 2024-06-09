@@ -1,0 +1,16 @@
+<main>
+	<div *ngIf="article" class="back-image"></div>
+
+	<div class="body">
+		<card>
+			<div class="content">
+				<loading *ngIf="!article" />
+
+				<h1 *ngIf="!!article">{{ article.title }}</h1>
+				<div *ngIf="!!article">{{ article.summary }}</div>
+			</div>
+		</card>
+
+		<directional-button direction="left" (click)="onClickBack()">Back</directional-button>
+	</div>
+</main>

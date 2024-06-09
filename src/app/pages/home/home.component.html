@@ -1,0 +1,21 @@
+<main>
+	<div class="search-section">
+		<div class="section-header">
+			Filter by keywords
+		</div>
+
+		<search-bar [value]="query.getValue()" (valueChange)="query.next($event)" />
+	</div>
+
+	<div class="article-section">
+		<div class="results section-header">
+			<div>Results: {{ articles.length }}</div>
+			<hr />
+		</div>
+
+		<div class="articles">
+			<article-card class="article" *ngFor="let article of articles" [value]="article"
+				(onClick)="onClick(article)" />
+		</div>
+	</div>
+</main>

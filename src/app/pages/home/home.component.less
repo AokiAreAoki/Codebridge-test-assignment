@@ -1,0 +1,52 @@
+main {
+	width: 100vw;
+	height: 100vh;
+	overflow: hidden;
+	box-sizing: border-box;
+
+	display: flex;
+	flex-direction: column;
+	gap: 40px;
+
+	&:first-child {
+		padding-top: 2rem;
+	}
+
+	.search-section {
+		flex: 0 0 0%;
+		display: flex;
+		flex-direction: column;
+		gap: 10px;
+		padding: 0 3rem;
+	}
+
+	.article-section {
+		flex: 1 0 0%;
+		display: flex;
+		flex-direction: column;
+		gap: 30px;
+		overflow: hidden;
+
+		.results {
+			display: flex;
+			flex-direction: column;
+			gap: 10px;
+			padding: 0 3rem;
+		}
+
+		.articles {
+			flex: 1 1 0%;
+			display: grid;
+			grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+			gap: 20px;
+			overflow: hidden auto;
+			padding: 0 3rem;
+			padding-bottom: 2rem;
+			scrollbar-width: thin;
+
+			.article {
+				height: 500px;
+			}
+		}
+	}
+}
